@@ -7,6 +7,7 @@ FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+RUN mkdir -p public
 ARG API_URL=http://localhost:4000
 ENV API_URL=${API_URL}
 ARG NEXT_PUBLIC_SOCKET_URL=http://localhost:4000
