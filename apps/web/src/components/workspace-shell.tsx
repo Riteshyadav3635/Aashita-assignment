@@ -174,15 +174,15 @@ export function WorkspaceShell({ workspaceId, children }: { workspaceId: string;
   const boards = boardData?.boards ?? [];
 
   const sidebar = (
-    <aside className="flex w-full max-w-[240px] flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] p-4 md:w-[240px]">
-      <div className="mb-6 flex items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4">
+    <aside className={`workspace-sidebar relative flex w-full max-w-[256px] flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)] p-4 ${showCreateWorkspace ? 'md:w-[256px]' : 'md:w-[76px]'} md:max-w-none md:p-3 lg:w-[256px] lg:p-4`}>
+      <div className="mb-6 flex items-center justify-between gap-3 border-b border-[var(--color-border)] pb-4 md:justify-center lg:justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-[6px] bg-[var(--color-subtle)] text-[var(--color-accent)]">
-            <FolderKanban size={15} strokeWidth={1.75} />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--color-accent)]/10 text-[var(--color-accent)]">
+            <FolderKanban size={17} strokeWidth={1.75} />
           </div>
-          <div>
+          <div className="min-w-0 md:hidden lg:block">
             <div className="text-[11px] font-medium text-[var(--color-muted)]">Workspace</div>
-            <div className="mt-0.5 text-sm font-medium text-[var(--color-text)]">{workspaceName}</div>
+            <div className="mt-0.5 max-w-[150px] truncate text-sm font-semibold text-[var(--color-text)]">{workspaceName}</div>
           </div>
         </div>
         <Button type="button" variant="ghost" size="sm" aria-label="Close sidebar" className="h-8 w-8 p-0 md:hidden" onClick={() => setMobileOpen(false)}>
@@ -190,12 +190,12 @@ export function WorkspaceShell({ workspaceId, children }: { workspaceId: string;
         </Button>
       </div>
 
-      <div className="mb-5 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-subtle)] p-2.5">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <span className="text-[11px] font-medium text-[var(--color-muted)]">Workspace</span>
-          <Button type="button" variant="secondary" size="sm" onClick={() => setShowCreateWorkspace(true)} className="gap-1.5 px-2 text-[11px]">
+      <div className="mb-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-subtle)]/70 p-2.5">
+        <div className="mb-2 flex items-center justify-between gap-2 md:justify-center lg:justify-between">
+          <span className="text-[11px] font-medium text-[var(--color-muted)] md:hidden lg:inline">Workspaces</span>
+          <Button type="button" variant="secondary" size="sm" aria-label="Create workspace" title="Create workspace" onClick={() => setShowCreateWorkspace(true)} className="gap-1.5 px-2 text-[11px] md:h-8 md:w-8 md:p-0 lg:h-8 lg:w-auto lg:px-2">
             <Plus size={12} strokeWidth={1.75} />
-            New
+            <span className="md:hidden lg:inline">New</span>
           </Button>
         </div>
 
@@ -207,14 +207,15 @@ export function WorkspaceShell({ workspaceId, children }: { workspaceId: string;
                 key={membership.workspaceId}
                 href={`/w/${membership.workspaceId}`}
                 className={[
-                  'flex items-center gap-2 rounded-[6px] border px-2.5 py-2 text-sm transition-colors duration-120 ease-out',
+                  'flex items-center gap-2 rounded-lg border px-2.5 py-2 text-sm transition-colors duration-150 ease-out md:justify-center md:px-0 lg:justify-start lg:px-2.5',
                   active
-                    ? 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)]'
+                    ? 'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] shadow-sm'
                     : 'border-transparent bg-transparent text-[var(--color-muted)] hover:border-[var(--color-border)] hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)]',
                 ].join(' ')}
+                title={membership.name}
               >
                 <Avatar name={membership.name} size="sm" className="shrink-0" />
-                <span className="truncate">{membership.name}</span>
+                <span className="truncate md:hidden lg:inline">{membership.name}</span>
               </Link>
             );
           })}
@@ -222,7 +223,7 @@ export function WorkspaceShell({ workspaceId, children }: { workspaceId: string;
       </div>
 
       {showCreateWorkspace ? (
-        <div className="mb-5 rounded-[8px] border border-[var(--color-border)] bg-[var(--color-subtle)] p-3">
+        <div className="mb-5 rounded-xl border border-[var(--color-border)] bg-[var(--color-subtle)] p-3">
           <div className="mb-2 text-[11px] font-medium text-[var(--color-muted)]">Create workspace</div>
           <Input
             value={newWorkspaceName}
@@ -250,16 +251,16 @@ export function WorkspaceShell({ workspaceId, children }: { workspaceId: string;
       ) : null}
 
       <div className="mb-5">
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <span className="text-[11px] font-medium text-[var(--color-muted)]">Boards</span>
-          {role !== 'VIEWER' ? <Button type="button" variant="ghost" size="sm" aria-label="Add board" className="h-7 w-7 p-0" onClick={() => { void handleCreateBoard(); }}>
+        <div className="mb-2 flex items-center justify-between gap-2 md:justify-center lg:justify-between">
+          <span className="text-[11px] font-medium text-[var(--color-muted)] md:hidden lg:inline">Boards</span>
+          {role !== 'VIEWER' ? <Button type="button" variant="ghost" size="sm" aria-label="Add board" title="Add board" className="h-7 w-7 p-0" onClick={() => { void handleCreateBoard(); }}>
             <Plus size={14} strokeWidth={1.75} />
           </Button> : null}
         </div>
 
         <div className="space-y-1.5">
           {boards.length === 0 ? (
-            <div className="rounded-[6px] border border-dashed border-[var(--color-border)] bg-[var(--color-subtle)] px-2.5 py-2 text-sm text-[var(--color-muted)]">
+            <div className="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-subtle)] px-2.5 py-2 text-sm text-[var(--color-muted)] md:hidden lg:block">
               No boards yet.
             </div>
           ) : (
@@ -268,20 +269,22 @@ export function WorkspaceShell({ workspaceId, children }: { workspaceId: string;
                 key={board.id}
                 href={`/w/${workspaceId}/boards/${board.id}`}
                 className={[
-                  'block rounded-[6px] border px-2.5 py-2 text-sm transition-colors duration-120 ease-out',
+                  'flex items-center gap-2 rounded-lg border px-2.5 py-2 text-sm transition-colors duration-150 ease-out md:justify-center md:px-0 lg:justify-start lg:px-2.5',
                   pathname === `/w/${workspaceId}/boards/${board.id}`
-                    ? 'border-[var(--color-border)] bg-[var(--color-subtle)] text-[var(--color-text)]'
+                    ? 'border-[var(--color-border)] bg-[var(--color-subtle)] text-[var(--color-text)] shadow-sm'
                     : 'border-transparent text-[var(--color-muted)] hover:border-[var(--color-border)] hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)]',
                 ].join(' ')}
+                title={board.name}
               >
-                {board.name}
+                <FolderKanban size={14} strokeWidth={1.75} className="shrink-0" />
+                <span className="truncate md:hidden lg:inline">{board.name}</span>
               </Link>
             ))
           )}
         </div>
       </div>
 
-      <nav className="space-y-1.5">
+      <nav aria-label="Workspace navigation" className="space-y-1.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           const href = item.href.replace(':workspaceId', workspaceId);
@@ -291,29 +294,31 @@ export function WorkspaceShell({ workspaceId, children }: { workspaceId: string;
               key={item.href}
               href={href}
               className={[
-                'flex items-center gap-2 rounded-[6px] px-2.5 py-2 text-sm transition-colors duration-120 ease-out',
+              'flex items-center gap-2 rounded-lg px-2.5 py-2.5 text-sm transition-colors duration-150 ease-out md:justify-center md:px-0 lg:justify-start lg:px-3',
                 active
-                  ? 'border-l-2 border-[var(--color-accent)] bg-[var(--color-subtle)] pl-2 text-[var(--color-text)]'
+                ? 'bg-[var(--color-accent)]/10 font-medium text-[var(--color-accent)]'
                   : 'text-[var(--color-muted)] hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)]',
               ].join(' ')}
+              aria-current={active ? 'page' : undefined}
+              title={item.label}
             >
-              <Icon size={14} strokeWidth={1.75} className="shrink-0" />
-              <span>{item.label}</span>
+              <Icon size={16} strokeWidth={1.75} className="shrink-0" />
+              <span className="md:hidden lg:inline">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
       <div className="mt-auto border-t border-[var(--color-border)] pt-4">
-        <div className="flex items-center justify-between gap-2 rounded-[6px] bg-[var(--color-subtle)] p-2">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-subtle)]/70 p-2 md:justify-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-2">
             <Avatar name={user?.name ?? 'User'} size="sm" />
-            <div className="min-w-0">
+            <div className="min-w-0 md:hidden lg:block">
               <div className="truncate text-sm font-medium text-[var(--color-text)]">{user?.name ?? 'User'}</div>
               <div className="text-[11px] text-[var(--color-muted)]">{role ?? 'Member'}</div>
             </div>
           </div>
-          <Button type="button" variant="ghost" size="sm" aria-label="Sign out" className="h-8 w-8 p-0" onClick={() => { void handleSignOut(); }}>
+          <Button type="button" variant="ghost" size="sm" aria-label="Sign out" title="Sign out" className="h-8 w-8 shrink-0 p-0" onClick={() => { void handleSignOut(); }}>
             <LogOut size={14} strokeWidth={1.75} />
           </Button>
         </div>
@@ -324,7 +329,7 @@ export function WorkspaceShell({ workspaceId, children }: { workspaceId: string;
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
       <div className="flex min-h-screen">
-        <div className="hidden md:flex md:min-w-[240px]">{sidebar}</div>
+        <div className={`hidden md:flex md:shrink-0 ${showCreateWorkspace ? 'md:w-[256px]' : 'md:w-[76px]'} lg:w-[256px]`}>{sidebar}</div>
 
         {mobileOpen ? (
           <div className="fixed inset-0 z-40 bg-[color:rgba(12,10,9,0.28)] md:hidden" onClick={() => setMobileOpen(false)}>
