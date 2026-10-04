@@ -62,6 +62,26 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
   return issueSession(user.id, user.email, user.name);
 }
 
+export async function changeUserPassword(userId: string, currentPassword: string, newPassword: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+
+  if (!user || !(await argon2.verify(user.passwordHash, currentPassword))) {
+    throw new AppError(401, 'INVALID_CREDENTIALS', 'Current password is incorrect');
+  }
+
+  const passwordHash = await argon2.hash(newPassword, { type: argon2.argon2id });
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    }),
+    prisma.refreshToken.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    }),
+  ]);
+}
+
 export async function issueSession(userId: string, email: string, name: string): Promise<AuthResult> {
   const accessToken = issueAccessToken({ id: userId, email, name });
   const refreshToken = generateRefreshToken();

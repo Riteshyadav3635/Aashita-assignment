@@ -14,6 +14,42 @@ afterAll(async () => {
 });
 
 describe('auth and workspace RBAC', () => {
+  it('changes the authenticated user password and revokes existing refresh sessions', async () => {
+    const signup = await request(app)
+      .post('/api/auth/signup')
+      .send({ name: 'Password User', email: 'password@example.com', password: 'OldPassword123' });
+    expect(signup.status).toBe(201);
+    const accessToken = signup.body.accessToken;
+    const refreshCookie = (signup.headers['set-cookie'] as string[])[0]!.split(';')[0]!;
+
+    const rejectedChange = await request(app)
+      .post('/api/auth/change-password')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ currentPassword: 'WrongPassword123', newPassword: 'NewPassword123' });
+    expect(rejectedChange.status).toBe(401);
+
+    const changed = await request(app)
+      .post('/api/auth/change-password')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({ currentPassword: 'OldPassword123', newPassword: 'NewPassword123' });
+    expect(changed.status).toBe(200);
+
+    const revokedSession = await request(app)
+      .post('/api/auth/refresh')
+      .set('Cookie', refreshCookie);
+    expect(revokedSession.status).toBe(401);
+
+    const oldPasswordLogin = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'password@example.com', password: 'OldPassword123' });
+    expect(oldPasswordLogin.status).toBe(401);
+
+    const newPasswordLogin = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'password@example.com', password: 'NewPassword123' });
+    expect(newPasswordLogin.status).toBe(200);
+  });
+
   it('creates a user workspace and restricts member permissions', async () => {
     const ownerResponse = await request(app)
       .post('/api/auth/signup')

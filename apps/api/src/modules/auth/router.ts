@@ -5,7 +5,7 @@ import { AppError } from '../../lib/errors.js';
 import { clearRefreshCookie, getRefreshTokenFromRequest, hashRefreshToken, setRefreshCookie, toPublicUser } from '../../lib/auth.js';
 import { prisma } from '../../lib/prisma.js';
 import { authenticate, requireAuth } from './middleware.js';
-import { loginUser, revokeRefreshFamily, revokeUserSessions, rotateRefreshToken, signupUser } from './service.js';
+import { changeUserPassword, loginUser, revokeRefreshFamily, revokeUserSessions, rotateRefreshToken, signupUser } from './service.js';
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -24,6 +24,11 @@ const signupSchema = z.object({
 const loginSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(8),
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(8),
+  newPassword: z.string().min(8),
 });
 
 const logoutHandler = async (req: Request, res: Response) => {
@@ -92,6 +97,17 @@ authRouter.post('/refresh', async (req: Request, res: Response, next) => {
     });
   } catch (error) {
     clearRefreshCookie(res);
+    next(error);
+  }
+});
+
+authRouter.post('/change-password', authenticate, requireAuth, authLimiter, async (req: Request, res: Response, next) => {
+  try {
+    const payload = changePasswordSchema.parse(req.body);
+    await changeUserPassword(req.user!.id, payload.currentPassword, payload.newPassword);
+    clearRefreshCookie(res);
+    res.status(200).json({ success: true });
+  } catch (error) {
     next(error);
   }
 });
