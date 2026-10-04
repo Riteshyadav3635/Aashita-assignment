@@ -6,7 +6,7 @@ This document captures the design decisions, operational constraints, and trade-
 
 The project is a multi-tenant collaborative workspace service built around a PostgreSQL-backed API and a Next.js frontend. It models workspaces, memberships, boards, lists, tasks, labels, activity, invites, and real-time updates while enforcing workspace-level tenant isolation and a role-based access matrix.
 
-The implementation follows the roadmap in `ROADMAP (1).md` and favours correctness and clear tenancy boundaries over broad feature count. This is intentional: the app is designed to be reliable under concurrent board edits, cross-tenant access attempts, and degraded Redis/DB conditions.
+The implementation follows the roadmap in `ROADMAP.md` and favours correctness and clear tenancy boundaries over broad feature count. This is intentional: the app is designed to be reliable under concurrent board edits, cross-tenant access attempts, and degraded Redis/DB conditions.
 
 ## Architecture
 
