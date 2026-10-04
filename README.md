@@ -1,12 +1,30 @@
 # Workspace
 
-A full-stack, multi-tenant collaboration app for organizing team work in workspaces, boards, lists, and tasks.
+Workspace is a full-stack collaboration app that gives teams one place to organize projects as workspaces, boards, lists, and tasks. It combines task planning, role-based access, activity history, search, and live updates so teams can coordinate work without relying on disconnected task lists.
+
+## Live demo
+
+- **Application:** <https://aashita-assignment-production-2436.vercel.app>
+- **Login:** <https://aashita-assignment-production-2436.vercel.app/login>
+
+## GitHub repository
+
+<https://github.com/Riteshyadav3635/Aashita-assignment>
 
 ## Project overview
 
-Workspace gives teams a shared place to organize work and follow progress. Members can work on kanban-style boards, find tasks across their workspace, review an activity history, and see live changes without manually refreshing.
+Workspace is designed for teams that need shared task tracking with workspace-level membership and permissions. Members create workspaces, organize work on kanban-style boards, search tasks, review activity, and see changes broadcast to connected clients. The API enforces tenant boundaries and permissions while PostgreSQL persists application data.
 
-The application is intended for teams that need shared task tracking with workspace-level membership and permissions. The API enforces tenant boundaries and role permissions; the frontend provides the user-facing workspace, board, member, activity, and search experiences.
+## Engineering highlights
+
+- Next.js frontend and Express API deployed separately, integrated through REST rewrites and Socket.IO.
+- Workspace-scoped authorization with role and permission checks on protected operations.
+- Password hashing, short-lived access tokens, and rotating refresh-token sessions.
+- PostgreSQL persistence through Prisma migrations, with optimistic task-version checks to detect stale updates.
+- Zod request validation, structured API errors, request logging, and health/readiness endpoints.
+- Optional Redis-backed caching, shared Socket.IO broadcasts, and BullMQ jobs, with core API operation able to continue when Redis is unavailable.
+- Automated API and web tests, type checking, linting, and production builds.
+- Responsive Next.js UI deployed on Vercel; Dockerized API and Socket.IO service deployed on Render.
 
 ## Key features
 
@@ -232,6 +250,7 @@ Create environment files locally; do not put production values in this README. T
 | `FRONTEND_URL` | Exact allowed frontend origin for REST CORS, Socket.IO CORS, and invite links | `https://your-frontend.example` | Required in production |
 | `API_URL` | Backend destination for Next.js `/api/*` and `/health` rewrites | `http://localhost:4000` | Set for the web app; defaults to localhost |
 | `NEXT_PUBLIC_SOCKET_URL` | API origin used by browser Socket.IO client | `http://localhost:4000` | Set for the web app; defaults to localhost |
+| `SOCKET_URL` | Present in the API environment schema and local template; the current frontend Socket.IO client uses `NEXT_PUBLIC_SOCKET_URL` | `http://localhost:4000` | No |
 | `APP_NAME` | API metadata setting | `workspace` | No |
 | `APP_VERSION` | API metadata setting | `0.1.0` | No |
 | `RUN_WORKER` | Starts the BullMQ email worker and daily digest scheduler when exactly `true` | `true` | No; optional background jobs |
@@ -406,6 +425,20 @@ npm run build
 
 At the repository root, `npm run test:all` runs the API test suite and then builds the web app. GitHub Actions additionally runs API and web checks and builds both Docker images.
 
+## Production build
+
+Build each application with the package scripts:
+
+```bash
+cd apps/api
+npm run build
+
+cd ../web
+npm run build
+```
+
+The API build compiles TypeScript to `dist`; the web build produces the Next.js production output. The API Dockerfile and web Dockerfile also define container builds for their respective applications.
+
 ## Deployment
 
 The repository contains deployment configuration for **Vercel (frontend)** and **Render (API/WebSocket)**. The backend is configured for Render, not Railway. The Dockerized API can be deployed elsewhere, but another platform would need its service settings, health checks, environment variables, and database/Redis connections configured separately.
@@ -426,6 +459,12 @@ The readiness endpoint is `/health/ready`; it reports database and Redis status.
 ### Production build and runtime
 
 The API Dockerfile builds TypeScript and starts `node dist/src/server.js` after `prisma migrate deploy`. The web Dockerfile builds Next.js standalone output and starts its standalone server. Vercel uses the configured Next.js build rather than the web Dockerfile.
+
+## Challenges and engineering decisions
+
+- **Separate web and API origins:** REST calls use the Next.js `/api` rewrite while Socket.IO connects directly to the API. This keeps the browser/API integration explicit and lets the API apply credentialed CORS for the configured frontend origin.
+- **Workspace data isolation:** Requests are authenticated and checked against workspace membership and role permissions; task updates also use a version field to identify stale writes.
+- **Optional Redis dependency:** PostgreSQL is the readiness requirement. Redis-backed caching, queue processing, and cross-instance Socket.IO broadcasts are optional capabilities, and the API has degraded behavior when Redis is unavailable.
 
 ## Production architecture and live deployment
 
@@ -504,3 +543,8 @@ No license has been specified yet.
 ## Author
 
 Ritesh Yadav
+
+## Live demo and repository
+
+- **Live application:** <https://aashita-assignment-production-2436.vercel.app>
+- **GitHub:** <https://github.com/Riteshyadav3635/Aashita-assignment>
