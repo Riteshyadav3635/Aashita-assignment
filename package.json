@@ -1,0 +1,9 @@
+{
+  "name": "workspace-monorepo",
+  "private": true,
+  "scripts": {
+    "dev:api": "cd apps/api && npm run dev",
+    "dev:web": "cd apps/web && npm run dev",
+    "test:all": "cd apps/api && npm test && cd ../web && npm run build"
+  }
+}
